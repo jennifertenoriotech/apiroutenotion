@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notion Workspace Manager</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+    <header class="app-header border-bottom">
+      <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+          <p class="eyebrow mb-1">Notion Workspace Manager</p>
+          <h1 class="h3 mb-0">Gestor de Paginas Notion</h1>
+        </div>
+        <span class="api-pill">API RESTful + MongoDB</span>
+      </nav>
+    </header>
+
+    <main class="container py-4 py-lg-5">
+      <section class="intro-section mb-4">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h2 class="h4 mb-2">Panel academico de gestion de espacios Notion</h2>
+            <p class="mb-0 text-secondary">
+              CRUD de paginas conectado a API RESTful con MongoDB.
+            </p>
+          </div>
+          <div class="col-lg-4">
+            <div class="summary-strip">
+              <div>
+                <span class="summary-label">Paginas registradas</span>
+                <strong id="contadorPaginas">0</strong>
+              </div>
+              <div>
+                <span class="summary-label">Estado</span>
+                <strong id="estadoApi">Cargando</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="alerta" class="alert d-none" role="alert"></div>
+
+      <div class="row g-4">
+        <section class="col-lg-4">
+          <div class="card app-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                <div>
+                  <p class="section-kicker mb-1">Nueva pagina</p>
+                  <h2 id="formTitulo" class="h5 mb-0">Guardar pagina</h2>
+                </div>
+                <span id="modoFormulario" class="badge text-bg-light">Crear</span>
+              </div>
+
+              <form id="notionForm" class="vstack gap-3">
+                <input type="hidden" id="paginaId">
+
+                <div>
+                  <label for="tituloPagina" class="form-label">Titulo de la pagina</label>
+                  <input class="form-control" id="tituloPagina" name="tituloPagina" type="text" required maxlength="120">
+                </div>
+
+                <div>
+                  <label for="espacioTrabajo" class="form-label">Espacio de trabajo</label>
+                  <input class="form-control" id="espacioTrabajo" name="espacioTrabajo" type="text" required maxlength="100">
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6 col-lg-12">
+                    <label for="tipoContenido" class="form-label">Tipo de contenido</label>
+                    <select class="form-select" id="tipoContenido" name="tipoContenido" required>
+                      <option value="Nota">Nota</option>
+                      <option value="Tarea">Tarea</option>
+                      <option value="Documento">Documento</option>
+                      <option value="Base de datos">Base de datos</option>
+                      <option value="Plantilla">Plantilla</option>
+                      <option value="Proyecto">Proyecto</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6 col-lg-12">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado" required>
+                      <option value="Borrador">Borrador</option>
+                      <option value="En progreso">En progreso</option>
+                      <option value="Publicado">Publicado</option>
+                      <option value="Archivado">Archivado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="categoria" class="form-label">Categoria</label>
+                  <input class="form-control" id="categoria" name="categoria" type="text" required maxlength="80">
+                </div>
+
+                <div>
+                  <label for="fechaCreacion" class="form-label">Fecha de creacion</label>
+                  <input class="form-control" id="fechaCreacion" name="fechaCreacion" type="date" required>
+                </div>
+
+                <div>
+                  <label for="responsable" class="form-label">Responsable</label>
+                  <input class="form-control" id="responsable" name="responsable" type="text" required maxlength="80">
+                </div>
+
+                <div>
+                  <label for="descripcion" class="form-label">Descripcion</label>
+                  <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required maxlength="500"></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <button id="submitBtn" class="btn btn-dark" type="submit">Guardar pagina</button>
+                  <button id="cancelarEdicion" class="btn btn-outline-secondary d-none" type="button">Cancelar edicion</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="col-lg-8">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+            <div>
+              <p class="section-kicker mb-1">Biblioteca de paginas</p>
+              <h2 class="h5 mb-0">Paginas registradas</h2>
+            </div>
+            <button id="recargarPaginas" class="btn btn-outline-dark btn-sm" type="button">Actualizar lista</button>
+          </div>
+
+          <div id="estadoCarga" class="status-line mb-3">Cargando paginas...</div>
+
+          <div class="table-responsive app-table-wrap">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Pagina</th>
+                  <th>Workspace</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="paginasBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
